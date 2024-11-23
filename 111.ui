@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>822</width>
     <height>600</height>
    </rect>
   </property>
@@ -21,8 +21,78 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>8</number>
+       <number>5</number>
       </property>
+      <widget class="QWidget" name="Login_menu">
+       <layout class="QVBoxLayout" name="verticalLayout_14">
+        <item>
+         <widget class="QLabel" name="label_19">
+          <property name="font">
+           <font>
+            <pointsize>14</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Логин</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="login">
+          <property name="font">
+           <font>
+            <pointsize>14</pointsize>
+           </font>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_20">
+          <property name="font">
+           <font>
+            <pointsize>14</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Пароль</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="password">
+          <property name="font">
+           <font>
+            <pointsize>14</pointsize>
+           </font>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_21">
+          <property name="font">
+           <font>
+            <pointsize>14</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="Login_b">
+          <property name="font">
+           <font>
+            <pointsize>14</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Войти</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
       <widget class="QWidget" name="User_main">
        <layout class="QVBoxLayout" name="page_1_layout">
         <property name="leftMargin">
@@ -50,7 +120,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="Statitic">
+         <widget class="QPushButton" name="Statitic_view_user">
           <property name="minimumSize">
            <size>
             <width>0</width>
@@ -132,7 +202,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="Statistic">
+         <widget class="QPushButton" name="Statistic_view_admin">
           <property name="minimumSize">
            <size>
             <width>0</width>
@@ -155,6 +225,24 @@
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QPushButton" name="Back_emp">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>50</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>14</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Назад</string>
+            </property>
+           </widget>
+          </item>
           <item>
            <widget class="QPushButton" name="Add_emp">
             <property name="minimumSize">
@@ -212,7 +300,7 @@
          </layout>
         </item>
         <item>
-         <widget class="QTableWidget" name="Emp_table"/>
+         <widget class="QTableWidget" name="Table_emp"/>
         </item>
        </layout>
       </widget>
@@ -220,6 +308,24 @@
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QPushButton" name="Back_station">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>50</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>14</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Назад</string>
+            </property>
+           </widget>
+          </item>
           <item>
            <widget class="QPushButton" name="Add_station">
             <property name="minimumSize">
@@ -277,7 +383,7 @@
          </layout>
         </item>
         <item>
-         <widget class="QTableWidget" name="Station_table"/>
+         <widget class="QTableWidget" name="Table_station"/>
         </item>
        </layout>
       </widget>
@@ -287,6 +393,24 @@
          <layout class="QVBoxLayout" name="verticalLayout_4">
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_3">
+            <item>
+             <widget class="QPushButton" name="Back_izm">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>50</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>14</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Назад</string>
+              </property>
+             </widget>
+            </item>
             <item>
              <widget class="QPushButton" name="Add_izm_2">
               <property name="minimumSize">
@@ -306,7 +430,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="Del_izm">
+             <widget class="QPushButton" name="Red_izm">
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -324,7 +448,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="Red_izm">
+             <widget class="QPushButton" name="Del_izm">
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -389,11 +513,11 @@
          </layout>
         </item>
         <item>
-         <widget class="QTableWidget" name="tableWidget"/>
+         <widget class="QTableWidget" name="Table_izm"/>
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="Izm_add">
+      <widget class="QWidget" name="Emp_add">
        <layout class="QVBoxLayout" name="verticalLayout_6">
         <item>
          <widget class="QLabel" name="label">
@@ -524,7 +648,7 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_6">
           <item>
-           <widget class="QPushButton" name="Back_emp">
+           <widget class="QPushButton" name="Back_emp_add">
             <property name="font">
              <font>
               <pointsize>14</pointsize>
@@ -536,7 +660,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="Save_emp">
+           <widget class="QPushButton" name="Save_emp_add">
             <property name="font">
              <font>
               <pointsize>14</pointsize>
@@ -598,7 +722,7 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_7">
           <item>
-           <widget class="QPushButton" name="pushButton">
+           <widget class="QPushButton" name="Back_station_add">
             <property name="font">
              <font>
               <pointsize>14</pointsize>
@@ -610,7 +734,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_2">
+           <widget class="QPushButton" name="Save_station_add">
             <property name="font">
              <font>
               <pointsize>14</pointsize>
@@ -625,7 +749,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="page">
+      <widget class="QWidget" name="Izm_add">
        <layout class="QVBoxLayout" name="verticalLayout_8">
         <item>
          <widget class="QLabel" name="label_9">
@@ -756,7 +880,7 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_8">
           <item>
-           <widget class="QPushButton" name="pushButton_3">
+           <widget class="QPushButton" name="Back_izm_add">
             <property name="font">
              <font>
               <pointsize>14</pointsize>
@@ -768,7 +892,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_4">
+           <widget class="QPushButton" name="Save_izm_add">
             <property name="font">
              <font>
               <pointsize>14</pointsize>
@@ -783,7 +907,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="page_2">
+      <widget class="QWidget" name="Statistic">
        <layout class="QVBoxLayout" name="verticalLayout_13">
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_9">
@@ -881,12 +1005,12 @@
          </layout>
         </item>
         <item>
-         <widget class="QTableWidget" name="tableWidget_2"/>
+         <widget class="QTableWidget" name="Table_stat"/>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_11">
           <item>
-           <widget class="QPushButton" name="pushButton_7">
+           <widget class="QPushButton" name="Back_stat">
             <property name="font">
              <font>
               <pointsize>14</pointsize>
@@ -900,7 +1024,7 @@
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_12">
             <item>
-             <widget class="QPushButton" name="pushButton_5">
+             <widget class="QPushButton" name="Create_stat">
               <property name="font">
                <font>
                 <pointsize>14</pointsize>
@@ -912,7 +1036,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="pushButton_6">
+             <widget class="QPushButton" name="Save_word_stat">
               <property name="font">
                <font>
                 <pointsize>14</pointsize>
