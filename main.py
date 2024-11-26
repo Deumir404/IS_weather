@@ -5,24 +5,29 @@ from interface1 import Ui_MainWindow
 def change_page(window, num):
     window.stackedWidget.setCurrentIndex(num)
 
-def auth_user(window):
+def auth_user(window, app):
     global starter_page
     if window.login.text() == "admin" and window.password.text() == "admin":
         change_page(window, 2)
         starter_page = 2
         initiliaze_button(window)
+        app.showMaximized()
     elif window.login.text() == "user" and window.password.text() == "user":
         change_page(window, 1)
         starter_page = 1
         initiliaze_button(window)
+        app.showMaximized()
     else :
         window.label_21.setText("Невереный пароль")
         window.label_21.setStyleSheet("color : red")
+    
         
+def setup_login(window, app):
+    app.resize(230,350)
+    window.Login_b.clicked.connect(lambda :  auth_user(window, app))
 
 def initiliaze_button(window):
     #Окно входа
-    window.Login_b.clicked.connect(lambda :  auth_user(window))
 
     #Окно метеоролога
     #Кнопка добавить замер
@@ -85,11 +90,14 @@ def initiliaze_button(window):
 if __name__ == '__main__' :
     app = QApplication(sys.argv)
     main_window = QMainWindow()
+    main_window.setMinimumSize(230,350)
+    
     Content_main_window = Ui_MainWindow()
     Content_main_window.setupUi(main_window)
     global starter_page
     starter_page = 0
-    initiliaze_button(Content_main_window)
+    setup_login(Content_main_window, main_window)
+    
     main_window.show()
     
     sys.exit(app.exec())
