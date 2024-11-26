@@ -1,25 +1,33 @@
 from PyQt6.QtWidgets import QApplication, QMainWindow
 import sys
 from interface1 import Ui_MainWindow
+import mysql.connector
 
 def change_page(window, num):
     window.stackedWidget.setCurrentIndex(num)
 
 def auth_user(window, app):
     global starter_page
-    if window.login.text() == "admin" and window.password.text() == "admin":
-        change_page(window, 2)
-        starter_page = 2
+    
+    try:
+        global connection
+        cursor = connection.cursor()
+        cursor.execute("SELECT role FROM users WHERE surname = %s", (window.login_line.text(),))
+        results = cursor.fetchall()
+        role = results[0]
+        if role == 1:
+            change_page(window, 2)
+            starter_page = 2
+        if role == 0:
+            change_page(window, 1)
+            starter_page = 1
         initiliaze_button(window)
         app.showMaximized()
-    elif window.login.text() == "user" and window.password.text() == "user":
-        change_page(window, 1)
-        starter_page = 1
-        initiliaze_button(window)
-        app.showMaximized()
-    else :
-        window.label_21.setText("Невереный пароль")
-        window.label_21.setStyleSheet("color : red")
+        cursor.close()
+        connection.close()
+    except mysql.connector.Error as err:
+        window.label_21.setText(f"Ошибка: {err}")
+        window.label_21.setStyleSheet("color: red")
     
         
 def setup_login(window, app):
@@ -97,7 +105,17 @@ if __name__ == '__main__' :
     global starter_page
     starter_page = 0
     setup_login(Content_main_window, main_window)
+    global connection
+    
+   
+
     
     main_window.show()
     
     sys.exit(app.exec())
+    connection = mysql.connector.connect(
+                host="localhost",
+                user= "Admin",
+                password= "Admin123",
+                database="main_chena"
+    )
