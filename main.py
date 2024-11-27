@@ -1,35 +1,58 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow
+from PyQt6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
+from PyQt6.QtGui import QFont
+from PyQt6.QtCore import Qt
+import server
 import sys
 from interface1 import Ui_MainWindow
-import mysql.connector
+import pymysql
 
 def change_page(window, num):
     window.stackedWidget.setCurrentIndex(num)
 
 def auth_user(window, app):
     global starter_page
-    
     try:
-        global connection
+        connection = pymysql.connect(
+        host= server.host_server,
+        user= window.login_line.text(),
+        password= window.password_line.text(),
+        database="main_chena"
+        )
+        global cursor
         cursor = connection.cursor()
         cursor.execute("SELECT role FROM users WHERE surname = %s", (window.login_line.text(),))
         results = cursor.fetchall()
-        role = results[0]
-        if role == 1:
-            change_page(window, 2)
-            starter_page = 2
-        if role == 0:
-            change_page(window, 1)
-            starter_page = 1
-        initiliaze_button(window)
-        app.showMaximized()
-        cursor.close()
-        connection.close()
-    except mysql.connector.Error as err:
+        if len(results) == 1:
+            role = results[0][0]
+            if role == 1:
+                change_page(window, 2)
+                starter_page = 2
+            if role == 0:
+                change_page(window, 1)
+                starter_page = 1
+            initiliaze_button(window)
+            app.showMaximized() 
+    except pymysql.MySQLError as err:
         window.label_21.setText(f"Ошибка: {err}")
         window.label_21.setStyleSheet("color: red")
     
-        
+
+def Fill_table_emp(window):
+    cursor.execute("SELECT * FROM users")
+    rows = cursor.fetchall()
+    window.Table_emp.setColumnCount(len(rows[0]))
+    window.Table_emp.setRowCount(len(rows))
+    for i in range(len(rows)):
+        for j in range(len(rows[0])):
+            font = QFont()
+            font.setPointSize(14)
+            Item = QTableWidgetItem(str(rows[i][j]))
+            Item.setFlags(Item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+            Item.setFont(font)
+            window.Table_emp.setItem(i, j, Item)
+    change_page(window, 3)
+
+
 def setup_login(window, app):
     app.resize(230,350)
     window.Login_b.clicked.connect(lambda :  auth_user(window, app))
@@ -45,7 +68,7 @@ def initiliaze_button(window):
 
     #Окно администратора
     #Окно управления метеорологами
-    window.Emp_view.clicked.connect(lambda: change_page(window, 3))
+    window.Emp_view.clicked.connect(lambda :  Fill_table_emp(window))
     #Окно управления станциями
     window.Station_view.clicked.connect(lambda: change_page(window, 4))
     #Окно управления измерениями
@@ -104,18 +127,9 @@ if __name__ == '__main__' :
     Content_main_window.setupUi(main_window)
     global starter_page
     starter_page = 0
+    global cursor
+    cursor = 0
     setup_login(Content_main_window, main_window)
-    global connection
-    
-   
-
-    
     main_window.show()
     
     sys.exit(app.exec())
-    connection = mysql.connector.connect(
-                host="localhost",
-                user= "Admin",
-                password= "Admin123",
-                database="main_chena"
-    )
