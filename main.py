@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
+from PyQt6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QDialog
 from PyQt6.QtGui import QFont
 from PyQt6.QtCore import Qt
 import server
@@ -10,6 +10,7 @@ def change_page(window, num):
     window.stackedWidget.setCurrentIndex(num)
 
 def auth_user(window, app):
+    global connection
     global starter_page
     try:
         connection = pymysql.connect(
@@ -20,14 +21,14 @@ def auth_user(window, app):
         )
         global cursor
         cursor = connection.cursor()
-        cursor.execute("SELECT role FROM users WHERE surname = %s", (window.login_line.text(),))
+        cursor.execute("SELECT admin FROM users WHERE surname = %s", (window.login_line.text(),))
         results = cursor.fetchall()
         if len(results) == 1:
-            role = results[0][0]
-            if role == 1:
+            admin = results[0][0]
+            if admin == 1:
                 change_page(window, 2)
                 starter_page = 2
-            if role == 0:
+            if admin == 0:
                 change_page(window, 1)
                 starter_page = 1
             initiliaze_button(window)
@@ -36,6 +37,24 @@ def auth_user(window, app):
         window.label_21.setText(f"Ошибка: {err}")
         window.label_21.setStyleSheet("color: red")
     
+
+def Add_emp(window, Change):
+    Surname = window.Surname.text()
+    Firstname = window.Firstname.text()
+    Patronymic = window.Patronymic.text()
+    Adress = window.Adress.text()
+    Number = window.Number.text()
+    Station = window.Station.text()
+    try:
+        Admin = window.Admin.text()
+        Admin = int(Admin)
+    except:
+        #Написать класс под ошибки
+        Error = QDialog()
+        Error.show()
+    cursor.execute(f"INSERT INTO users (Surname, Firstname, Patronymic, Adress, Num, Admin) VALUES (%s, %s, %s, %s, %s, %s);", (Surname, Firstname, Patronymic, Adress, Number, int(Admin)))
+    connection.commit()
+    Fill_table_emp(window)
 
 def Fill_table_emp(window):
     cursor.execute("SELECT * FROM users")
@@ -95,8 +114,8 @@ def initiliaze_button(window):
     #window.Del_izm.clicked.connect()
 
     #Окно добавления метеорологов
-    window.Back_emp_add.clicked.connect(lambda: change_page(window, 3))
-    #window.Save_emp_add.clicked.connect())
+    window.Back_emp_add.clicked.connect(lambda: Fill_table_emp(window))
+    window.Save_emp_add.clicked.connect(lambda: Add_emp(window))
 
     #Окно добавления станций
     window.Back_station_add.clicked.connect(lambda: change_page(window, 4))
