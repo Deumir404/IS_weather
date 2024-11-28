@@ -1,7 +1,3 @@
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QApplication
-from PyQt6.QtCore import Qt
-import sys
-
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton
 from PyQt6.QtCore import Qt
 
@@ -35,10 +31,6 @@ class ErrorDialog(QDialog):
 
         # Установка макета
         self.setLayout(layout)
+        self.exec()
 
 
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    error_manager = ErrorDialog("Ошибка при регистрации")
-    error_manager.exec()
-    sys.exit(app.exec())

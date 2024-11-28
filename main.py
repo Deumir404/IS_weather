@@ -4,6 +4,7 @@ from PyQt6.QtCore import Qt
 import server
 import sys
 from interface1 import Ui_MainWindow
+from Error_class import ErrorDialog
 import pymysql
 
 def change_page(window, num):
@@ -21,7 +22,7 @@ def auth_user(window, app):
         )
         global cursor
         cursor = connection.cursor()
-        cursor.execute("SELECT admin FROM users WHERE surname = %s", (window.login_line.text(),))
+        cursor.execute("SELECT admin FROM users WHERE Login = %s", (window.login_line.text(),))
         results = cursor.fetchall()
         if len(results) == 1:
             admin = results[0][0]
@@ -38,7 +39,7 @@ def auth_user(window, app):
         window.label_21.setStyleSheet("color: red")
     
 
-def Add_emp(window, Change):
+def Add_emp(window):
     Surname = window.Surname.text()
     Firstname = window.Firstname.text()
     Patronymic = window.Patronymic.text()
@@ -50,9 +51,18 @@ def Add_emp(window, Change):
         Admin = int(Admin)
     except:
         #Написать класс под ошибки
-        Error = QDialog()
-        Error.show()
-    cursor.execute(f"INSERT INTO users (Surname, Firstname, Patronymic, Adress, Num, Admin) VALUES (%s, %s, %s, %s, %s, %s);", (Surname, Firstname, Patronymic, Adress, Number, int(Admin)))
+        Error = ErrorDialog("Поле админ должно быть числом")
+        window.Admin.setText("")
+        return 0
+    Login = window.Login_line_emp.text()
+    Password = window.Password_line_emp.text()
+    cursor.execute(f"INSERT INTO users (Surname, Firstname, Patronymic, Adress, Num, Admin, Login) VALUES (%s, %s, %s, %s, %s, %s, %s);", (Surname, Firstname, Patronymic, Adress, Number, int(Admin), Login))
+    cursor.execute(f"CREATE USER '{Login}'@'%' IDENTIFIED BY '{Password}';")
+    if Admin == 0:
+        cursor.execute(f"GRANT SELECT, INSERT ON main_chena.* TO '{Login}'@'%';")
+    if Admin == 1:
+        cursor.execute(f"GRANT ALL PRIVILEGES ON *.* TO '{Login}'@'%';")
+    cursor.execute("FLUSH PRIVILEGES;")
     connection.commit()
     Fill_table_emp(window)
 
