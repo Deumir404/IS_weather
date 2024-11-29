@@ -66,6 +66,31 @@ def Add_emp(window):
     connection.commit()
     Fill_table_emp(window)
 
+def Fill_lineedit_emp(window, red):
+    if red == 0:
+        window.Surname.setText("")
+        window.Firstname.setText("")
+        window.Patronymic.setText("")
+        window.Adress.setText("")
+        window.Number.setText("")
+        window.Station.setText("")
+        window.Admin.setText("")
+        window.Login_line_emp.setText("")
+        window.Password_line_emp.setText("")
+    else:
+        currect = window.Table_emp.currentRow()
+        window.Surname.setText(f"{window.Table_emp.item(currect, 1).text()}")
+        window.Firstname.setText(f"{window.Table_emp.item(currect, 2).text()}")
+        window.Patronymic.setText(f"{window.Table_emp.item(currect, 3).text()}")
+        window.Adress.setText(f"{window.Table_emp.item(currect, 4).text()}")
+        window.Number.setText(f"{window.Table_emp.item(currect, 5).text()}")
+        window.Station.setText(f"")
+        window.Admin.setText(f"{window.Table_emp.item(currect, 6).text()}")
+        window.Login_line_emp.setText(f"{window.Table_emp.item(currect, 7).text()}")
+        window.Password_line_emp.setText(f"")
+    change_page(window, 6)
+        
+
 def Fill_table_emp(window):
     cursor.execute("SELECT * FROM users")
     rows = cursor.fetchall()
@@ -106,8 +131,8 @@ def initiliaze_button(window):
     window.Statistic_view_admin.clicked.connect(lambda: change_page(window, 9))
 
     #Окно управления пользователями
-    window.Add_emp.clicked.connect(lambda: change_page(window, 6))
-    window.Redac_emp.clicked.connect(lambda: change_page(window, 6))
+    window.Add_emp.clicked.connect(lambda: Fill_lineedit_emp(window, 0))
+    window.Redac_emp.clicked.connect(lambda: Fill_lineedit_emp(window, 1))
     window.Back_emp.clicked.connect(lambda: change_page(window, starter_page))
     #window.Del_emp.clicked.connect()
 
