@@ -50,7 +50,6 @@ def Add_emp(window):
         Admin = window.Admin.text()
         Admin = int(Admin)
     except:
-        #Написать класс под ошибки
         Error = ErrorDialog("Поле админ должно быть числом")
         window.Admin.setText("")
         return 0
@@ -66,6 +65,34 @@ def Add_emp(window):
     connection.commit()
     Fill_table_emp(window)
 
+def Edit_emp(window):
+    print("Test")
+    Surname = window.Surname.text()
+    Firstname = window.Firstname.text()
+    Patronymic = window.Patronymic.text()
+    Adress = window.Adress.text()
+    Number = window.Number.text()
+    Station = window.Station.text()
+    try:
+        Admin = window.Admin.text()
+        Admin = int(Admin)
+    except:
+        Error = ErrorDialog("Поле админ должно быть числом")
+        window.Admin.setText("")
+        return 0
+    Login = window.Login_line_emp.text()
+    Password = window.Password_line_emp.text()
+    cursor.execute(f"UPDATE users SET Surname = %s, Firstname = %s, Patronymic = %s, Adress = %s, Num = %s, Admin = %s WHERE Login = %s;", (Surname, Firstname, Patronymic, Adress, Number, int(Admin), Login))
+    if Admin == 0:
+        cursor.execute(f"REVOKE ALL PRIVILEGES, GRANT OPTION FROM '{Login}'@'%';")
+        cursor.execute(f"GRANT SELECT, INSERT ON main_chena.* TO '{Login}'@'%';")
+    if Admin == 1:
+        cursor.execute(f"GRANT ALL PRIVILEGES ON *.* TO '{Login}'@'%';")
+    cursor.execute("FLUSH PRIVILEGES;")
+    connection.commit()
+    Fill_table_emp(window)
+
+
 def Fill_lineedit_emp(window, red):
     if red == 0:
         window.Surname.setText("")
@@ -77,6 +104,8 @@ def Fill_lineedit_emp(window, red):
         window.Admin.setText("")
         window.Login_line_emp.setText("")
         window.Password_line_emp.setText("")
+        window.Save_emp_add.clicked.disconnect()
+        window.Save_emp_add.clicked.connect(lambda: Add_emp(window))
     else:
         currect = window.Table_emp.currentRow()
         window.Surname.setText(f"{window.Table_emp.item(currect, 1).text()}")
@@ -88,6 +117,8 @@ def Fill_lineedit_emp(window, red):
         window.Admin.setText(f"{window.Table_emp.item(currect, 6).text()}")
         window.Login_line_emp.setText(f"{window.Table_emp.item(currect, 7).text()}")
         window.Password_line_emp.setText(f"")
+        window.Save_emp_add.clicked.disconnect()
+        window.Save_emp_add.clicked.connect(lambda: Edit_emp(window))
     change_page(window, 6)
         
 
