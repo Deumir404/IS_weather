@@ -151,7 +151,7 @@ def setup_login(window, app):
 
 
 def Fill_table_station(window):
-    cursor.execute("SELECT * FROM station")
+    cursor.execute("SELECT idstation, Name,  ST_asText(Coordinate) FROM station")
     rows = cursor.fetchall()
     if (len(rows) == 0):
         change_page(window, 4)
@@ -176,7 +176,7 @@ def check_coordinates(latitude, longitude):
 def Add_station(window):
     Name = window.Name_station.text()
     Coordinate = window.Coordinate.text()
-    Coordinate.split()
+    Coordinate = Coordinate.split(" ")
     if (len(Coordinate) == 1):
         Error = ErrorDialog("Проверьте корректность координат(Пример: -45 -100)")
         window.Admin.setText("")
@@ -195,6 +195,8 @@ def Add_station(window):
     cursor.execute(f"INSERT INTO station (Name, Coordinate) VALUES (%s, Point(%s, %s));", (Name, latitude, longitude))
     connection.commit()
     Fill_table_station(window)
+
+
 
 def initiliaze_button(window):
     #Окно входа
