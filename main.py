@@ -38,7 +38,6 @@ def auth_user(window, app):
         window.label_21.setText(f"Ошибка: {err}")
         window.label_21.setStyleSheet("color: red")
     
-
 def Add_emp(window):
     Surname = window.Surname.text()
     Firstname = window.Firstname.text()
@@ -66,7 +65,6 @@ def Add_emp(window):
     Fill_table_emp(window)
 
 def Edit_emp(window):
-    print("Test")
     Surname = window.Surname.text()
     Firstname = window.Firstname.text()
     Patronymic = window.Patronymic.text()
@@ -91,7 +89,6 @@ def Edit_emp(window):
     cursor.execute("FLUSH PRIVILEGES;")
     connection.commit()
     Fill_table_emp(window)
-
 
 def Fill_lineedit_emp(window, red):
     if red == 0:
@@ -120,7 +117,13 @@ def Fill_lineedit_emp(window, red):
         window.Save_emp_add.clicked.disconnect()
         window.Save_emp_add.clicked.connect(lambda: Edit_emp(window))
     change_page(window, 6)
-        
+
+def Remove_emp(window):
+    currect = window.Table_emp.currentRow()
+    login = window.Table_emp.item(currect, 7).text()
+    cursor.execute("DELETE FROM users WHERE login = %s", (login,))
+    cursor.execute(f"DROP USER '{login}'@'%';")
+    Fill_table_emp(window)
 
 def Fill_table_emp(window):
     cursor.execute("SELECT * FROM users")
@@ -136,7 +139,6 @@ def Fill_table_emp(window):
             Item.setFont(font)
             window.Table_emp.setItem(i, j, Item)
     change_page(window, 3)
-
 
 def setup_login(window, app):
     app.resize(230,350)
@@ -165,7 +167,7 @@ def initiliaze_button(window):
     window.Add_emp.clicked.connect(lambda: Fill_lineedit_emp(window, 0))
     window.Redac_emp.clicked.connect(lambda: Fill_lineedit_emp(window, 1))
     window.Back_emp.clicked.connect(lambda: change_page(window, starter_page))
-    #window.Del_emp.clicked.connect()
+    window.Del_emp.clicked.connect(lambda: Remove_emp(window))
 
     #Окно управления станциями
     window.Add_station.clicked.connect(lambda: change_page(window, 7))
