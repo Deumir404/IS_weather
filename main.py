@@ -128,6 +128,9 @@ def Remove_emp(window):
 def Fill_table_emp(window):
     cursor.execute("SELECT * FROM users")
     rows = cursor.fetchall()
+    if (len(rows) == 0):
+        change_page(window, 3)
+        return 0
     window.Table_emp.setColumnCount(len(rows[0]))
     window.Table_emp.setRowCount(len(rows))
     for i in range(len(rows)):
@@ -140,9 +143,58 @@ def Fill_table_emp(window):
             window.Table_emp.setItem(i, j, Item)
     change_page(window, 3)
 
+
+
 def setup_login(window, app):
     app.resize(230,350)
     window.Login_b.clicked.connect(lambda :  auth_user(window, app))
+
+
+def Fill_table_station(window):
+    cursor.execute("SELECT * FROM station")
+    rows = cursor.fetchall()
+    if (len(rows) == 0):
+        change_page(window, 4)
+        return 0
+    window.Table_station.setColumnCount(len(rows[0]))
+    window.Table_station.setRowCount(len(rows))
+    for i in range(len(rows)):
+        for j in range(len(rows[0])):
+            font = QFont()
+            font.setPointSize(14)
+            Item = QTableWidgetItem(str(rows[i][j]))
+            Item.setFlags(Item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+            Item.setFont(font)
+            window.Table_station.setItem(i, j, Item)
+    change_page(window, 4)
+
+def check_coordinates(latitude, longitude):
+    if -90 <= latitude <= 90 and -180 <= longitude <= 180:
+        return True
+    return False
+
+def Add_station(window):
+    Name = window.Name_station.text()
+    Coordinate = window.Coordinate.text()
+    Coordinate.split()
+    if (len(Coordinate) == 1):
+        Error = ErrorDialog("Проверьте корректность координат(Пример: -45 -100)")
+        window.Admin.setText("")
+        return 0
+    try:
+        latitude = int(Coordinate[0])
+        longitude = int(Coordinate[1])
+    except:
+        Error = ErrorDialog("Долгота и широта должны быть числами(Пример: -45 -100)")
+        window.Admin.setText("")
+        return 0
+    if (not check_coordinates(latitude, longitude)):
+        Error = ErrorDialog("Проверьте корректность координат(Пример: -45 -100)")
+        window.Admin.setText("")
+        return 0
+    cursor.execute(f"INSERT INTO station (Name, Coordinate) VALUES (%s, Point(%s, %s));", (Name, latitude, longitude))
+    connection.commit()
+    Fill_table_station(window)
 
 def initiliaze_button(window):
     #Окно входа
@@ -157,7 +209,7 @@ def initiliaze_button(window):
     #Окно управления метеорологами
     window.Emp_view.clicked.connect(lambda :  Fill_table_emp(window))
     #Окно управления станциями
-    window.Station_view.clicked.connect(lambda: change_page(window, 4))
+    window.Station_view.clicked.connect(lambda: Fill_table_station(window))
     #Окно управления измерениями
     window.Izm_view.clicked.connect(lambda: change_page(window, 5))
     #Окно статистики 
@@ -187,7 +239,7 @@ def initiliaze_button(window):
 
     #Окно добавления станций
     window.Back_station_add.clicked.connect(lambda: change_page(window, 4))
-    #window.Save_station_add.clicked.connect())
+    window.Save_station_add.clicked.connect(lambda: Add_station(window))
 
     #Окно добавления измерений
     if starter_page == 1:
