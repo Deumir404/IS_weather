@@ -37,7 +37,8 @@ def auth_user(window, app):
     except pymysql.MySQLError as err:
         window.label_21.setText(f"Ошибка: {err}")
         window.label_21.setStyleSheet("color: red")
-    
+
+
 def Add_emp(window):
     Surname = window.Surname.text()
     Firstname = window.Firstname.text()
@@ -173,6 +174,23 @@ def check_coordinates(latitude, longitude):
         return True
     return False
 
+def Fill_lineedit_station(window, red):
+    if red == 0:
+        window.Name_station.setText("")
+        window.Coordinate.setText("")
+        window.Save_station_add.clicked.disconnect()
+        window.Save_station_add.clicked.connect(lambda: Add_station(window))
+    else:
+        currect = window.Table_station.currentRow()
+        window.Name_station.setText(f"{window.Table_station.item(currect, 1).text()}")
+        Coordinate = window.Table_station.item(currect, 2).text()
+        Coordinate = Coordinate.replace('POINT(', '')
+        Coordinate = Coordinate.replace(')', '')
+        window.Coordinate.setText(f"{Coordinate}")
+        window.Save_station_add.clicked.disconnect()
+        window.Save_station_add.clicked.connect(lambda: Edit_station(window, currect))
+    change_page(window, 7)
+
 def Add_station(window):
     Name = window.Name_station.text()
     Coordinate = window.Coordinate.text()
@@ -196,7 +214,35 @@ def Add_station(window):
     connection.commit()
     Fill_table_station(window)
 
+def Edit_station(window, currect_row):
+    Name = window.Name_station.text()
+    Coordinate = window.Coordinate.text()
+    Coordinate = Coordinate.split(" ")
+    if (len(Coordinate) == 1):
+        Error = ErrorDialog("Проверьте корректность координат(Пример: -45 -100)")
+        window.Admin.setText("")
+        return 0
+    try:
+        latitude = int(Coordinate[0])
+        longitude = int(Coordinate[1])
+    except:
+        Error = ErrorDialog("Долгота и широта должны быть числами(Пример: -45 -100)")
+        window.Admin.setText("")
+        return 0
+    if (not check_coordinates(latitude, longitude)):
+        Error = ErrorDialog("Проверьте корректность координат(Пример: -45 -100)")
+        window.Admin.setText("")
+        return
+    id =  window.Table_station.item(currect_row, 0).text()
+    cursor.execute(f"UPDATE station SET Name = %s, Coordinate = Point(%s, %s)  WHERE idstation = %s;", (Name, latitude, longitude, id))
+    connection.commit()
+    Fill_table_station(window)
 
+def Remove_station(window):
+    currect = window.Table_station.currentRow()
+    id = window.Table_station.item(currect, 0).text()
+    cursor.execute("DELETE FROM station WHERE idstation = %s", (id,))
+    Fill_table_station(window)
 
 def initiliaze_button(window):
     #Окно входа
@@ -224,10 +270,10 @@ def initiliaze_button(window):
     window.Del_emp.clicked.connect(lambda: Remove_emp(window))
 
     #Окно управления станциями
-    window.Add_station.clicked.connect(lambda: change_page(window, 7))
-    window.Red_station.clicked.connect(lambda: change_page(window, 7))
+    window.Add_station.clicked.connect(lambda: Fill_lineedit_station(window, 0))
+    window.Red_station.clicked.connect(lambda: Fill_lineedit_station(window, 1))
     window.Back_station.clicked.connect(lambda: change_page(window, starter_page))
-    #window.Del_station.clicked.connect()
+    window.Del_station.clicked.connect(lambda: Remove_station(window))
 
     #Окно управления измерениями
     window.Add_izm_2.clicked.connect(lambda: change_page(window, 8))
