@@ -257,7 +257,7 @@ def Remove_station(window):
 
 
 
-def Fill_lineedit_station(window, red):
+def Fill_lineedit_izm(window, red):
     if red == 0:
         window.Time.setText(f"{datetime.now()}")
         window.Time.setEnabled(False)
@@ -272,19 +272,19 @@ def Fill_lineedit_station(window, red):
             pass
         window.Save_izm_add.clicked.connect(lambda: Add_measure(window))
     else:
-        currect = window.Table_station.currentRow()
-        window.Time.setText("")
-        window.Time.setEnabled(True)
-        window.Temp.setText("")
-        window.humidity.setText("")
-        window.precipitation.setText("")
-        window.direction_wind.setText("")
-        window.Wind_speed.setText("")
+        currect = window.Table_izm.currentRow()
+        window.Time.setText(f"{window.Table_izm.item(currect, 3).text()}")
+        window.Time.setEnabled(False)
+        window.Temp.setText(f"{window.Table_izm.item(currect, 4).text()}")
+        window.humidity.setText(f"{window.Table_izm.item(currect, 5).text()}")
+        window.precipitation.setText(f"{window.Table_izm.item(currect, 6).text()}")
+        window.direction_wind.setText(f"{window.Table_izm.item(currect, 7).text()}")
+        window.Wind_speed.setText(f"{window.Table_izm.item(currect, 8).text()}")
         try:
             window.Save_izm_add.clicked.disconnect()
         except: 
             pass
-        #window.Save_izm_add.clicked.connect(lambda: Edit_measure(window, currect))
+        window.Save_izm_add.clicked.connect(lambda: Edit_measure(window, currect))
     change_page(window, 8)
 
 def Add_measure(window):
@@ -334,6 +334,52 @@ def Add_measure(window):
     connection.commit()
     Fill_table_measure(window)
 
+def Edit_measure(window, currect_row):
+    time = window.Time.text()
+    temp = window.Temp.text()
+    try:
+        temp = float(temp)
+    except:
+        e = ErrorDialog("Ошибка температура должна быть числом")
+        e.show()
+        return 0
+    humidity = window.humidity.text()
+    try:
+        humidity = float(humidity)
+        if not 0 <= humidity <= 100:
+            raise
+    except:
+        e = ErrorDialog("Ошибка влажность должна быть числом в процентах")
+        e.show()
+        return 0
+    precipitation = window.precipitation.text()
+    try:
+        precipitation = float(precipitation)
+    except:
+        e = ErrorDialog("Ошибка осадки должны быть числом")
+        e.show()
+        return 0
+    direction_wind = window.direction_wind.text()
+    try:
+        direction_wind = float(direction_wind)
+        if  not 0 <= direction_wind <= 360:
+            raise
+    except:
+        e = ErrorDialog("Ошибка направление ветра должно быть числом в градусах в пределах от 0 до 360")
+        e.show()
+        return 0
+    wind_speed = window.Wind_speed.text()
+    try:
+        wind_speed = float(wind_speed)
+    except:
+        e = ErrorDialog("Ошибка скорость ветра должно быть числом")
+        e.show()
+        return 0
+    id = window.Table_izm.item(currect_row, 0).text()
+    cursor.execute(f"UPDATE measure SET Temp = %s, Humadity = %s, Precepit = %s, `Wind speed` = %s, `Wind direction` = %s WHERE idmeasure = %s;", (temp, humidity, precipitation, direction_wind, wind_speed , id))
+    connection.commit()
+    Fill_table_measure(window)
+
 def Fill_table_measure(window):
     cursor.execute("SELECT * FROM measure")
     rows = cursor.fetchall()
@@ -351,6 +397,13 @@ def Fill_table_measure(window):
             Item.setFont(font)
             window.Table_izm.setItem(i, j, Item)
     change_page(window, 5)
+
+def Remove_measure(window):
+    currect = window.Table_izm.currentRow()
+    id = window.Table_izm.item(currect, 0).text()
+    cursor.execute("DELETE FROM measure WHERE idmeasure = %s", (id,))
+    Fill_table_measure(window)
+
 
 def initiliaze_button(window):
     #Окно входа
@@ -384,25 +437,26 @@ def initiliaze_button(window):
     window.Del_station.clicked.connect(lambda: Remove_station(window))
 
     #Окно управления измерениями
-    window.Add_izm_2.clicked.connect(lambda: Fill_lineedit_station(window, 0))
-    window.Red_izm.clicked.connect(lambda: Fill_lineedit_station(window, 1))
+    window.Add_izm_2.clicked.connect(lambda: Fill_lineedit_izm(window, 0))
+    window.Red_izm.clicked.connect(lambda: Fill_lineedit_izm(window, 1))
     window.Back_izm.clicked.connect(lambda: change_page(window, starter_page))
-    #window.Del_izm.clicked.connect()
+    window.Del_izm.clicked.connect(lambda: Remove_measure(window))
 
     #Окно добавления метеорологов
     window.Back_emp_add.clicked.connect(lambda: Fill_table_emp(window))
     window.Save_emp_add.clicked.connect(lambda: Add_emp(window))
 
     #Окно добавления станций
-    window.Back_station_add.clicked.connect(lambda: change_page(window, 4))
+    window.Back_station_add.clicked.connect(lambda: Fill_table_station(window))
     window.Save_station_add.clicked.connect(lambda: Add_station(window))
 
     #Окно добавления измерений
     if starter_page == 1:
         window.Back_izm_add.clicked.connect(lambda: change_page(window, starter_page))
+        window.Save_izm_add.clicked.connect(lambda: Add_measure(window))
     else :
-        window.Back_izm_add.clicked.connect(lambda: change_page(window, 5))
-    #window.Save_izm_add.clicked.connect()
+        window.Back_izm_add.clicked.connect(lambda: Fill_table_measure(window))
+        window.Save_izm_add.clicked.connect(lambda: Add_measure(window))
 
     #Окно статистики
     if starter_page == 1:
