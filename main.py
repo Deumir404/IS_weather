@@ -6,9 +6,14 @@ import sys
 from interface1 import Ui_MainWindow
 from Error_class import ErrorDialog
 import pymysql
+from datetime import datetime
 
 def change_page(window, num):
     window.stackedWidget.setCurrentIndex(num)
+
+def setup_login(window, app):
+    app.resize(230,350)
+    window.Login_b.clicked.connect(lambda :  auth_user(window, app))
 
 def auth_user(window, app):
     global connection
@@ -18,7 +23,7 @@ def auth_user(window, app):
         host= server.host_server,
         user= window.login_line.text(),
         password= window.password_line.text(),
-        database="main_chena"
+        database="weather"
         )
         global cursor
         cursor = connection.cursor()
@@ -58,7 +63,7 @@ def Add_emp(window):
     cursor.execute(f"INSERT INTO users (Surname, Firstname, Patronymic, Adress, Num, Admin, Login) VALUES (%s, %s, %s, %s, %s, %s, %s);", (Surname, Firstname, Patronymic, Adress, Number, int(Admin), Login))
     cursor.execute(f"CREATE USER '{Login}'@'%' IDENTIFIED BY '{Password}';")
     if Admin == 0:
-        cursor.execute(f"GRANT SELECT, INSERT ON main_chena.* TO '{Login}'@'%';")
+        cursor.execute(f"GRANT SELECT, INSERT ON weather.* TO '{Login}'@'%';")
     if Admin == 1:
         cursor.execute(f"GRANT ALL PRIVILEGES ON *.* TO '{Login}'@'%';")
     cursor.execute("FLUSH PRIVILEGES;")
@@ -84,7 +89,7 @@ def Edit_emp(window):
     cursor.execute(f"UPDATE users SET Surname = %s, Firstname = %s, Patronymic = %s, Adress = %s, Num = %s, Admin = %s WHERE Login = %s;", (Surname, Firstname, Patronymic, Adress, Number, int(Admin), Login))
     if Admin == 0:
         cursor.execute(f"REVOKE ALL PRIVILEGES, GRANT OPTION FROM '{Login}'@'%';")
-        cursor.execute(f"GRANT SELECT, INSERT ON main_chena.* TO '{Login}'@'%';")
+        cursor.execute(f"GRANT SELECT, INSERT ON weather.* TO '{Login}'@'%';")
     if Admin == 1:
         cursor.execute(f"GRANT ALL PRIVILEGES ON *.* TO '{Login}'@'%';")
     cursor.execute("FLUSH PRIVILEGES;")
@@ -102,7 +107,10 @@ def Fill_lineedit_emp(window, red):
         window.Admin.setText("")
         window.Login_line_emp.setText("")
         window.Password_line_emp.setText("")
-        window.Save_emp_add.clicked.disconnect()
+        try:
+            window.Save_emp_add.clicked.disconnect()
+        except: 
+            pass
         window.Save_emp_add.clicked.connect(lambda: Add_emp(window))
     else:
         currect = window.Table_emp.currentRow()
@@ -115,7 +123,10 @@ def Fill_lineedit_emp(window, red):
         window.Admin.setText(f"{window.Table_emp.item(currect, 6).text()}")
         window.Login_line_emp.setText(f"{window.Table_emp.item(currect, 7).text()}")
         window.Password_line_emp.setText(f"")
-        window.Save_emp_add.clicked.disconnect()
+        try:
+            window.Save_emp_add.clicked.disconnect()
+        except: 
+            pass
         window.Save_emp_add.clicked.connect(lambda: Edit_emp(window))
     change_page(window, 6)
 
@@ -145,12 +156,6 @@ def Fill_table_emp(window):
     change_page(window, 3)
 
 
-
-def setup_login(window, app):
-    app.resize(230,350)
-    window.Login_b.clicked.connect(lambda :  auth_user(window, app))
-
-
 def Fill_table_station(window):
     cursor.execute("SELECT idstation, Name,  ST_asText(Coordinate) FROM station")
     rows = cursor.fetchall()
@@ -178,7 +183,10 @@ def Fill_lineedit_station(window, red):
     if red == 0:
         window.Name_station.setText("")
         window.Coordinate.setText("")
-        window.Save_station_add.clicked.disconnect()
+        try:
+            window.Save_station_add.clicked.disconnect()
+        except:
+            pass
         window.Save_station_add.clicked.connect(lambda: Add_station(window))
     else:
         currect = window.Table_station.currentRow()
@@ -187,7 +195,10 @@ def Fill_lineedit_station(window, red):
         Coordinate = Coordinate.replace('POINT(', '')
         Coordinate = Coordinate.replace(')', '')
         window.Coordinate.setText(f"{Coordinate}")
-        window.Save_station_add.clicked.disconnect()
+        try:
+            window.Save_station_add.clicked.disconnect()
+        except:
+            pass
         window.Save_station_add.clicked.connect(lambda: Edit_station(window, currect))
     change_page(window, 7)
 
@@ -244,6 +255,103 @@ def Remove_station(window):
     cursor.execute("DELETE FROM station WHERE idstation = %s", (id,))
     Fill_table_station(window)
 
+
+
+def Fill_lineedit_station(window, red):
+    if red == 0:
+        window.Time.setText(f"{datetime.now()}")
+        window.Time.setEnabled(False)
+        window.Temp.setText("")
+        window.humidity.setText("")
+        window.precipitation.setText("")
+        window.direction_wind.setText("")
+        window.Wind_speed.setText("")
+        try:
+            window.Save_izm_add.clicked.disconnect()
+        except: 
+            pass
+        window.Save_izm_add.clicked.connect(lambda: Add_measure(window))
+    else:
+        currect = window.Table_station.currentRow()
+        window.Time.setText("")
+        window.Time.setEnabled(True)
+        window.Temp.setText("")
+        window.humidity.setText("")
+        window.precipitation.setText("")
+        window.direction_wind.setText("")
+        window.Wind_speed.setText("")
+        try:
+            window.Save_izm_add.clicked.disconnect()
+        except: 
+            pass
+        #window.Save_izm_add.clicked.connect(lambda: Edit_measure(window, currect))
+    change_page(window, 8)
+
+def Add_measure(window):
+    time = window.Time.text()
+    temp = window.Temp.text()
+    try:
+        temp = float(temp)
+    except:
+        e = ErrorDialog("Ошибка температура должна быть числом")
+        e.show()
+        return 0
+    humidity = window.humidity.text()
+    try:
+        humidity = float(humidity)
+        if not 0 <= humidity <= 100:
+            raise
+    except:
+        e = ErrorDialog("Ошибка влажность должна быть числом в процентах")
+        e.show()
+        return 0
+    precipitation = window.precipitation.text()
+    try:
+        precipitation = float(precipitation)
+    except:
+        e = ErrorDialog("Ошибка осадки должны быть числом")
+        e.show()
+        return 0
+    direction_wind = window.direction_wind.text()
+    try:
+        direction_wind = float(direction_wind)
+        if  not 0 <= direction_wind <= 360:
+            raise
+    except:
+        e = ErrorDialog("Ошибка направление ветра должно быть числом в градусах в пределах от 0 до 360")
+        e.show()
+        return 0
+    wind_speed = window.Wind_speed.text()
+    try:
+        wind_speed = float(wind_speed)
+    except:
+        e = ErrorDialog("Ошибка скорость ветра должно быть числом")
+        e.show()
+        return 0
+    user = cursor.execute("Select idUsers from users WHERE login = %s", (window.login_line.text(),))
+    
+    cursor.execute(f"INSERT INTO measure (id_station, id_user, Time, Temp, Humadity, Precepit, `Wind speed`, `Wind direction`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);", (1, user, time, temp, humidity, precipitation, wind_speed, direction_wind))
+    connection.commit()
+    Fill_table_measure(window)
+
+def Fill_table_measure(window):
+    cursor.execute("SELECT * FROM measure")
+    rows = cursor.fetchall()
+    if (len(rows) == 0):
+        change_page(window, 5)
+        return 0
+    window.Table_izm.setColumnCount(len(rows[0]))
+    window.Table_izm.setRowCount(len(rows))
+    for i in range(len(rows)):
+        for j in range(len(rows[0])):
+            font = QFont()
+            font.setPointSize(14)
+            Item = QTableWidgetItem(str(rows[i][j]))
+            Item.setFlags(Item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+            Item.setFont(font)
+            window.Table_izm.setItem(i, j, Item)
+    change_page(window, 5)
+
 def initiliaze_button(window):
     #Окно входа
 
@@ -259,7 +367,7 @@ def initiliaze_button(window):
     #Окно управления станциями
     window.Station_view.clicked.connect(lambda: Fill_table_station(window))
     #Окно управления измерениями
-    window.Izm_view.clicked.connect(lambda: change_page(window, 5))
+    window.Izm_view.clicked.connect(lambda: Fill_table_measure(window))
     #Окно статистики 
     window.Statistic_view_admin.clicked.connect(lambda: change_page(window, 9))
 
@@ -276,8 +384,8 @@ def initiliaze_button(window):
     window.Del_station.clicked.connect(lambda: Remove_station(window))
 
     #Окно управления измерениями
-    window.Add_izm_2.clicked.connect(lambda: change_page(window, 8))
-    window.Red_izm.clicked.connect(lambda: change_page(window, 8))
+    window.Add_izm_2.clicked.connect(lambda: Fill_lineedit_station(window, 0))
+    window.Red_izm.clicked.connect(lambda: Fill_lineedit_station(window, 1))
     window.Back_izm.clicked.connect(lambda: change_page(window, starter_page))
     #window.Del_izm.clicked.connect()
 
