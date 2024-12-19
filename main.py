@@ -405,6 +405,35 @@ def Remove_measure(window):
     Fill_table_measure(window)
 
 
+def create_statistic(window):
+    window.Table_stat.setColumnCount(3)
+    window.Table_stat.setRowCount(5)
+    window.Table_stat.setHorizontalHeaderLabels(['Минимум', 'Среднее', 'Максимальное'])
+    window.Table_stat.setVerticalHeaderLabels(['Температура', 'Влажность', 'Осадки', 'Скорость ветра', 'Направление ветра'])
+    massive = ["Temp", "Humadity", "Precepit", "`Wind speed`", "`Wind direction`"]
+    for i in range(len(massive)):
+        list_stat = []
+        cursor.execute(f"SELECT MIN({massive[i]}) AS average FROM weather.measure;")
+        answer = cursor.fetchone()[0]
+        list_stat.append(answer)
+
+        cursor.execute(f"SELECT AVG({massive[i]}) AS average FROM weather.measure;")
+        answer = cursor.fetchone()[0]
+        list_stat.append(answer)
+
+        cursor.execute(f"SELECT MAX({massive[i]}) AS average FROM weather.measure;")
+        answer = cursor.fetchone()[0]
+        list_stat.append(answer)
+        for j in range(len(list_stat)):
+            
+            font = QFont()
+            font.setPointSize(14)
+            Item = QTableWidgetItem(str(list_stat[j]))
+            Item.setFlags(Item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+            Item.setFont(font)
+            window.Table_stat.setItem(i, j, Item)
+
+
 def initiliaze_button(window):
     #Окно входа
 
@@ -464,7 +493,7 @@ def initiliaze_button(window):
     else :
         window.Back_stat.clicked.connect(lambda: change_page(window, 2))
     
-    #window.Create_stat.clicked.connect(lambda: change_page(window, 4))
+    window.Create_stat.clicked.connect(lambda: create_statistic(window))
     #window.Save_word_stat.clicked.connect(lambda: change_page(window, 4))
 
 if __name__ == '__main__' :
