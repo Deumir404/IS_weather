@@ -60,7 +60,7 @@ def Add_emp(window):
         return 0
     Login = window.Login_line_emp.text()
     Password = window.Password_line_emp.text()
-    cursor.execute(f"INSERT INTO users (Surname, Firstname, Patronymic, Adress, Num, Admin, Login) VALUES (%s, %s, %s, %s, %s, %s, %s);", (Surname, Firstname, Patronymic, Adress, Number, int(Admin), Login))
+    cursor.execute(f"INSERT INTO users (Surname, Firstname, Patronymic, Adress, Num, Admin, Login, Station) VALUES (%s, %s, %s, %s, %s, %s, %s);", (Surname, Firstname, Patronymic, Adress, Number, int(Admin), Login, Station))
     cursor.execute(f"CREATE USER '{Login}'@'%' IDENTIFIED BY '{Password}';")
     if Admin == 0:
         cursor.execute(f"GRANT SELECT, INSERT ON weather.* TO '{Login}'@'%';")
@@ -86,7 +86,7 @@ def Edit_emp(window):
         return 0
     Login = window.Login_line_emp.text()
     Password = window.Password_line_emp.text()
-    cursor.execute(f"UPDATE users SET Surname = %s, Firstname = %s, Patronymic = %s, Adress = %s, Num = %s, Admin = %s WHERE Login = %s;", (Surname, Firstname, Patronymic, Adress, Number, int(Admin), Login))
+    cursor.execute(f"UPDATE users SET Surname = %s, Firstname = %s, Patronymic = %s, Adress = %s, Num = %s, Admin = %s, Station = %s WHERE Login = %s;", (Surname, Firstname, Patronymic, Adress, Number, int(Admin), Station, Login))
     if Admin == 0:
         cursor.execute(f"REVOKE ALL PRIVILEGES, GRANT OPTION FROM '{Login}'@'%';")
         cursor.execute(f"GRANT SELECT, INSERT ON weather.* TO '{Login}'@'%';")
@@ -119,7 +119,7 @@ def Fill_lineedit_emp(window, red):
         window.Patronymic.setText(f"{window.Table_emp.item(currect, 3).text()}")
         window.Adress.setText(f"{window.Table_emp.item(currect, 4).text()}")
         window.Number.setText(f"{window.Table_emp.item(currect, 5).text()}")
-        window.Station.setText(f"")
+        window.Station.setText(f"{window.Table_emp.item(currect, 8).text()}")
         window.Admin.setText(f"{window.Table_emp.item(currect, 6).text()}")
         window.Login_line_emp.setText(f"{window.Table_emp.item(currect, 7).text()}")
         window.Password_line_emp.setText(f"")
@@ -145,6 +145,7 @@ def Fill_table_emp(window):
         return 0
     window.Table_emp.setColumnCount(len(rows[0]))
     window.Table_emp.setRowCount(len(rows))
+    window.Table_emp.setHorizontalHeaderLabels(['ID', 'Фамилия', 'Имя', 'Отчество', 'Адрес', 'Номер телефона', 'Админ?', 'Логин'])
     for i in range(len(rows)):
         for j in range(len(rows[0])):
             font = QFont()
@@ -153,6 +154,8 @@ def Fill_table_emp(window):
             Item.setFlags(Item.flags() & ~Qt.ItemFlag.ItemIsEditable)
             Item.setFont(font)
             window.Table_emp.setItem(i, j, Item)
+    window.Table_emp.resizeColumnsToContents()
+    window.Table_emp.resizeRowsToContents()   
     change_page(window, 3)
 
 
@@ -164,6 +167,7 @@ def Fill_table_station(window):
         return 0
     window.Table_station.setColumnCount(len(rows[0]))
     window.Table_station.setRowCount(len(rows))
+    window.Table_station.setHorizontalHeaderLabels(['ID', 'Название', 'Координаты'])
     for i in range(len(rows)):
         for j in range(len(rows[0])):
             font = QFont()
@@ -172,6 +176,8 @@ def Fill_table_station(window):
             Item.setFlags(Item.flags() & ~Qt.ItemFlag.ItemIsEditable)
             Item.setFont(font)
             window.Table_station.setItem(i, j, Item)
+    window.Table_station.resizeColumnsToContents()
+    window.Table_station.resizeRowsToContents()        
     change_page(window, 4)
 
 def check_coordinates(latitude, longitude):
@@ -329,8 +335,10 @@ def Add_measure(window):
         e.show()
         return 0
     user = cursor.execute("Select idUsers from users WHERE login = %s", (window.login_line.text(),))
-    
-    cursor.execute(f"INSERT INTO measure (id_station, id_user, Time, Temp, Humadity, Precepit, `Wind speed`, `Wind direction`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);", (1, user, time, temp, humidity, precipitation, wind_speed, direction_wind))
+    user = cursor.fetchone()[0]
+    station = cursor.execute("Select Station from users WHERE login = %s", (window.login_line.text(),))
+    station = cursor.fetchone()[0]
+    cursor.execute(f"INSERT INTO measure (id_station, id_user, Time, Temp, Humadity, Precepit, `Wind speed`, `Wind direction`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);", (station, user, time, temp, humidity, precipitation, wind_speed, direction_wind))
     connection.commit()
     Fill_table_measure(window)
 
@@ -381,13 +389,14 @@ def Edit_measure(window, currect_row):
     Fill_table_measure(window)
 
 def Fill_table_measure(window):
-    cursor.execute("SELECT * FROM measure")
+    cursor.execute("SELECT `idmeasure`, `Name`, `Login`, `Time`, `Temp`, `Humadity`, `Precepit`, `Wind speed`, `Wind direction` FROM `measure` LEFT JOIN `users` ON `Id_user` = `idUsers` LEFT JOIN `station` ON `Id_station` = `idstation`;")
     rows = cursor.fetchall()
     if (len(rows) == 0):
         change_page(window, 5)
         return 0
     window.Table_izm.setColumnCount(len(rows[0]))
     window.Table_izm.setRowCount(len(rows))
+    window.Table_izm.setHorizontalHeaderLabels(['ID', 'Станция', 'Метеоролог', 'Время замера', 'Температура',  'Влажность',  'Осадки',  'Скорость ветра',  'Направление ветра'])
     for i in range(len(rows)):
         for j in range(len(rows[0])):
             font = QFont()
@@ -396,6 +405,8 @@ def Fill_table_measure(window):
             Item.setFlags(Item.flags() & ~Qt.ItemFlag.ItemIsEditable)
             Item.setFont(font)
             window.Table_izm.setItem(i, j, Item)
+    window.Table_izm.resizeColumnsToContents()
+    window.Table_izm.resizeRowsToContents()
     change_page(window, 5)
 
 def Remove_measure(window):
@@ -406,14 +417,14 @@ def Remove_measure(window):
 
 
 def create_statistic(window):
-    window.Table_stat.setColumnCount(3)
+    window.Table_stat.setColumnCount(5)
     window.Table_stat.setRowCount(5)
-    window.Table_stat.setHorizontalHeaderLabels(['Минимум', 'Среднее', 'Максимальное'])
+    window.Table_stat.setHorizontalHeaderLabels(['Минимум', 'Среднее', 'Максимальное', 'Дисперсия', 'Стандартное отклонение'])
     window.Table_stat.setVerticalHeaderLabels(['Температура', 'Влажность', 'Осадки', 'Скорость ветра', 'Направление ветра'])
     massive = ["Temp", "Humadity", "Precepit", "`Wind speed`", "`Wind direction`"]
     for i in range(len(massive)):
         list_stat = []
-        cursor.execute(f"SELECT MIN({massive[i]}) AS average FROM weather.measure;")
+        cursor.execute(f"SELECT MIN({massive[i]}) AS minimum FROM weather.measure;")
         answer = cursor.fetchone()[0]
         list_stat.append(answer)
 
@@ -421,7 +432,15 @@ def create_statistic(window):
         answer = cursor.fetchone()[0]
         list_stat.append(answer)
 
-        cursor.execute(f"SELECT MAX({massive[i]}) AS average FROM weather.measure;")
+        cursor.execute(f"SELECT MAX({massive[i]}) AS maximum FROM weather.measure;")
+        answer = cursor.fetchone()[0]
+        list_stat.append(answer)
+
+        cursor.execute(f"SELECT VARIANCE({massive[i]}) AS maximum FROM weather.measure;")
+        answer = cursor.fetchone()[0]
+        list_stat.append(answer)
+
+        cursor.execute(f"SELECT STDDEV({massive[i]}) AS maximum FROM weather.measure;")
         answer = cursor.fetchone()[0]
         list_stat.append(answer)
         for j in range(len(list_stat)):
