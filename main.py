@@ -6,7 +6,7 @@ import sys
 from interface1 import Ui_MainWindow
 from Error_class import ErrorDialog
 import pymysql
-from datetime import datetime
+from datetime import datetime, date
 from docx import Document 
 
 def change_page(window, num):
@@ -417,31 +417,48 @@ def Remove_measure(window):
     Fill_table_measure(window)
 
 
+def fill_combobox(window):
+    window.Begin_period.setText("1970-1-1")
+    window.End_period.setText(str(datetime.now().date()))
+    cursor.execute("SELECT `idstation`, `name` FROM station")
+    station_in_db = cursor.fetchall()
+    station_ids = [str(station[0]) + " " + str(station[1]) for station in station_in_db]
+    window.Station_stat.addItems(station_ids)
+    change_page(window, 9)
+
 def create_statistic(window):
     window.Table_stat.setColumnCount(5)
     window.Table_stat.setRowCount(5)
     window.Table_stat.setHorizontalHeaderLabels(['Минимум', 'Среднее', 'Максимальное', 'Дисперсия', 'Стандартное отклонение'])
     window.Table_stat.setVerticalHeaderLabels(['Температура', 'Влажность', 'Осадки', 'Скорость ветра', 'Направление ветра'])
+    begin_period = window.Begin_period.text()
+    if begin_period == "":
+        begin_period = date(1970, 1, 1)
+    end_period = window.End_period.text()
+    if end_period == "":
+        end_period = datetime.now().date()
+    station = window.Station_stat.currentText()
+    station = station.split(" ")[0]
     massive = ["Temp", "Humadity", "Precepit", "`Wind speed`", "`Wind direction`"]
     for i in range(len(massive)):
         list_stat = []
-        cursor.execute(f"SELECT MIN({massive[i]}) AS minimum FROM weather.measure;")
+        cursor.execute(f"SELECT MIN({massive[i]}) AS minimum FROM weather.measure WHERE Time BETWEEN %s and %s AND id_station = %s ;", (begin_period, end_period, station))
         answer = cursor.fetchone()[0]
         list_stat.append(answer)
 
-        cursor.execute(f"SELECT AVG({massive[i]}) AS average FROM weather.measure;")
+        cursor.execute(f"SELECT AVG({massive[i]}) AS average FROM weather.measure WHERE Time BETWEEN %s and %s AND id_station = %s ;", (begin_period, end_period, station))
         answer = cursor.fetchone()[0]
         list_stat.append(answer)
 
-        cursor.execute(f"SELECT MAX({massive[i]}) AS maximum FROM weather.measure;")
+        cursor.execute(f"SELECT MAX({massive[i]}) AS maximum FROM weather.measure WHERE Time BETWEEN %s and %s AND id_station = %s ;", (begin_period, end_period, station))
         answer = cursor.fetchone()[0]
         list_stat.append(answer)
 
-        cursor.execute(f"SELECT VARIANCE({massive[i]}) AS maximum FROM weather.measure;")
+        cursor.execute(f"SELECT VARIANCE({massive[i]}) AS maximum FROM weather.measure WHERE Time BETWEEN %s and %s AND id_station = %s ;", (begin_period, end_period, station))
         answer = cursor.fetchone()[0]
         list_stat.append(answer)
 
-        cursor.execute(f"SELECT STDDEV({massive[i]}) AS maximum FROM weather.measure;")
+        cursor.execute(f"SELECT STDDEV({massive[i]}) AS maximum FROM weather.measure WHERE Time BETWEEN %s and %s AND id_station = %s ;", (begin_period, end_period, station))
         answer = cursor.fetchone()[0]
         list_stat.append(answer)
         for j in range(len(list_stat)):
@@ -472,9 +489,12 @@ def save_to_docx(window):
                 item = window.Table_stat.item(row, col)
                 if item is not None:
                     row_cells[col].text = item.text()
-
+        date = datetime.now()
+        date = date.date()
         # Сохранение документа
-        document.save('Отчёт.docx')
+        document.save(f'./Statistic/Отчёт {date}.docx')
+
+
 
 def initiliaze_button(window):
     #Окно входа
@@ -493,7 +513,7 @@ def initiliaze_button(window):
     #Окно управления измерениями
     window.Izm_view.clicked.connect(lambda: Fill_table_measure(window))
     #Окно статистики 
-    window.Statistic_view_admin.clicked.connect(lambda: change_page(window, 9))
+    window.Statistic_view_admin.clicked.connect(lambda: fill_combobox(window))
 
     #Окно управления пользователями
     window.Add_emp.clicked.connect(lambda: Fill_lineedit_emp(window, 0))
