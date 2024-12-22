@@ -7,6 +7,7 @@ from interface1 import Ui_MainWindow
 from Error_class import ErrorDialog
 import pymysql
 from datetime import datetime
+from docx import Document 
 
 def change_page(window, num):
     window.stackedWidget.setCurrentIndex(num)
@@ -451,7 +452,29 @@ def create_statistic(window):
             Item.setFlags(Item.flags() & ~Qt.ItemFlag.ItemIsEditable)
             Item.setFont(font)
             window.Table_stat.setItem(i, j, Item)
+        window.Table_stat.resizeColumnsToContents()
+        window.Table_stat.resizeRowsToContents()
 
+def save_to_docx(window):
+        create_statistic(window)
+        document = Document()
+        table = document.add_table(rows=1, cols=window.Table_stat.columnCount())
+        
+        # Добавление заголовков
+        hdr_cells = table.rows[0].cells
+        for i in range(window.Table_stat.columnCount()):
+            hdr_cells[i].text = window.Table_stat.horizontalHeaderItem(i).text()
+
+        # Добавление данных из QTableWidget
+        for row in range(window.Table_stat.rowCount()):
+            row_cells = table.add_row().cells
+            for col in range(window.Table_stat.columnCount()):
+                item = window.Table_stat.item(row, col)
+                if item is not None:
+                    row_cells[col].text = item.text()
+
+        # Сохранение документа
+        document.save('Отчёт.docx')
 
 def initiliaze_button(window):
     #Окно входа
@@ -513,7 +536,7 @@ def initiliaze_button(window):
         window.Back_stat.clicked.connect(lambda: change_page(window, 2))
     
     window.Create_stat.clicked.connect(lambda: create_statistic(window))
-    #window.Save_word_stat.clicked.connect(lambda: change_page(window, 4))
+    window.Save_word_stat.clicked.connect(lambda: save_to_docx(window))
 
 if __name__ == '__main__' :
     app = QApplication(sys.argv)
