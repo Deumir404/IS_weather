@@ -55,13 +55,15 @@ def Add_emp(window):
     try:
         Admin = window.Admin.text()
         Admin = int(Admin)
+        if Admin != 0 and Admin != 1:
+            raise
     except:
-        Error = ErrorDialog("Поле админ должно быть числом")
+        Error = ErrorDialog("Поле админ должно быть числом от 0 до 1")
         window.Admin.setText("")
         return 0
     Login = window.Login_line_emp.text()
     Password = window.Password_line_emp.text()
-    cursor.execute(f"INSERT INTO users (Surname, Firstname, Patronymic, Adress, Num, Admin, Login, Station) VALUES (%s, %s, %s, %s, %s, %s, %s);", (Surname, Firstname, Patronymic, Adress, Number, int(Admin), Login, Station))
+    cursor.execute(f"INSERT INTO users (Surname, Firstname, Patronymic, Adress, Num, Admin, Login, Station) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);", (Surname, Firstname, Patronymic, Adress, Number, int(Admin), Login, Station))
     cursor.execute(f"CREATE USER '{Login}'@'%' IDENTIFIED BY '{Password}';")
     if Admin == 0:
         cursor.execute(f"GRANT SELECT, INSERT ON weather.* TO '{Login}'@'%';")
@@ -114,7 +116,14 @@ def Fill_lineedit_emp(window, red):
             pass
         window.Save_emp_add.clicked.connect(lambda: Add_emp(window))
     else:
-        currect = window.Table_emp.currentRow()
+        try:
+            currect = window.Table_emp.currentRow()
+            if currect == -1:
+                raise
+        except:
+            error = ErrorDialog("Выберите строку для редактирования")
+            error.show()
+            return 0
         window.Surname.setText(f"{window.Table_emp.item(currect, 1).text()}")
         window.Firstname.setText(f"{window.Table_emp.item(currect, 2).text()}")
         window.Patronymic.setText(f"{window.Table_emp.item(currect, 3).text()}")
@@ -196,7 +205,14 @@ def Fill_lineedit_station(window, red):
             pass
         window.Save_station_add.clicked.connect(lambda: Add_station(window))
     else:
-        currect = window.Table_station.currentRow()
+        try:
+            currect = window.Table_station.currentRow()
+            if currect == -1:
+                raise
+        except:
+            error = ErrorDialog("Выберите строку для редактирования")
+            error.show()
+            return 0
         window.Name_station.setText(f"{window.Table_station.item(currect, 1).text()}")
         Coordinate = window.Table_station.item(currect, 2).text()
         Coordinate = Coordinate.replace('POINT(', '')
@@ -279,7 +295,14 @@ def Fill_lineedit_izm(window, red):
             pass
         window.Save_izm_add.clicked.connect(lambda: Add_measure(window))
     else:
-        currect = window.Table_izm.currentRow()
+        try:
+            currect = window.Table_izm.currentRow()
+            if currect == -1:
+                raise
+        except:
+            error = ErrorDialog("Выберите строку для редактирования")
+            error.show()
+            return 0
         window.Time.setText(f"{window.Table_izm.item(currect, 3).text()}")
         window.Time.setEnabled(False)
         window.Temp.setText(f"{window.Table_izm.item(currect, 4).text()}")
@@ -342,6 +365,8 @@ def Add_measure(window):
     cursor.execute(f"INSERT INTO measure (id_station, id_user, Time, Temp, Humadity, Precepit, `Wind speed`, `Wind direction`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);", (station, user, time, temp, humidity, precipitation, wind_speed, direction_wind))
     connection.commit()
     Fill_table_measure(window)
+    
+
 
 def Edit_measure(window, currect_row):
     time = window.Time.text()
@@ -390,9 +415,31 @@ def Edit_measure(window, currect_row):
     Fill_table_measure(window)
 
 def Fill_table_measure(window):
-    cursor.execute("SELECT `idmeasure`, `Name`, `Login`, `Time`, `Temp`, `Humadity`, `Precepit`, `Wind speed`, `Wind direction` FROM `measure` LEFT JOIN `users` ON `Id_user` = `idUsers` LEFT JOIN `station` ON `Id_station` = `idstation`;")
+    try:
+        window.Station_izm.currentIndexChanged.disconnect()
+    except:
+        pass
+    index = window.Station_izm.currentIndex()
+    window.Station_izm.clear()
+    cursor.execute("SELECT `idstation`, `name` FROM station")
+    station_in_db = cursor.fetchall()
+    station_ids = [str(station[0]) + " " + str(station[1]) for station in station_in_db]
+    station_ids.insert(0, "")
+    window.Station_izm.addItems(station_ids)
+    window.Station_izm.setCurrentIndex(index)
+    window.Station_izm.currentIndexChanged.connect(lambda: Fill_table_measure(window))
+
+    if window.Station_izm.currentText() == "":
+        cursor.execute("SELECT `idmeasure`, `Name`, `Login`, `Time`, `Temp`, `Humadity`, `Precepit`, `Wind speed`, `Wind direction` FROM `measure` LEFT JOIN `users` ON `Id_user` = `idUsers` LEFT JOIN `station` ON `Id_station` = `idstation`;")
+    else :
+        
+        id = window.Station_izm.currentText()
+        id = int(id.split(" ")[0])
+        cursor.execute("SELECT `idmeasure`, `Name`, `Login`, `Time`, `Temp`, `Humadity`, `Precepit`, `Wind speed`, `Wind direction` FROM `measure` LEFT JOIN `users` ON `Id_user` = `idUsers` LEFT JOIN `station` ON `Id_station` = `idstation` WHERE `idstation` = %s;", (id, ))
     rows = cursor.fetchall()
     if (len(rows) == 0):
+        window.Table_izm.setColumnCount(0)
+        window.Table_izm.setRowCount(0)
         change_page(window, 5)
         return 0
     window.Table_izm.setColumnCount(len(rows[0]))
