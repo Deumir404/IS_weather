@@ -558,7 +558,7 @@ def save_to_docx(window):
         date = datetime.now()
         date = date.date()
         # Сохранение документа
-        document.save(f'./Statistic/Отчёт {date}.docx')
+        document.save(f'./Statistic/Otchet {date}.docx')
 
 
 
@@ -567,9 +567,9 @@ def initiliaze_button(window):
 
     #Окно метеоролога
     #Кнопка добавить замер
-    window.Add_izm.clicked.connect(lambda: change_page(window, 8))
+    window.Add_izm.clicked.connect(lambda: Fill_lineedit_izm(window, 0))
     #Кнопка просмотр статистики
-    window.Statitic_view_user.clicked.connect(lambda: change_page(window, 9))
+    window.Statitic_view_user.clicked.connect(lambda: fill_combobox(window))
 
     #Окно администратора
     #Окно управления метеорологами
