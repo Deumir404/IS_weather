@@ -331,7 +331,7 @@ class Ui_MainWindow(object):
         self.label_6.setFont(font)
         self.label_6.setObjectName("label_6")
         self.verticalLayout_6.addWidget(self.label_6)
-        self.Station = QtWidgets.QLineEdit(parent=self.Emp_add)
+        self.Station = QtWidgets.QComboBox(parent=self.Emp_add)
         font = QtGui.QFont()
         font.setPointSize(14)
         self.Station.setFont(font)

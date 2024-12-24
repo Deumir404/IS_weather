@@ -51,7 +51,8 @@ def Add_emp(window):
     Patronymic = window.Patronymic.text()
     Adress = window.Adress.text()
     Number = window.Number.text()
-    Station = window.Station.text()
+    Station = window.Station.currentText()
+    Station = int(Station.split(" ")[0])
     try:
         Admin = window.Admin.text()
         Admin = int(Admin)
@@ -79,7 +80,8 @@ def Edit_emp(window):
     Patronymic = window.Patronymic.text()
     Adress = window.Adress.text()
     Number = window.Number.text()
-    Station = window.Station.text()
+    Station = window.Station.currentText()
+    Station = int(Station.split(" ")[0])
     try:
         Admin = window.Admin.text()
         Admin = int(Admin)
@@ -100,6 +102,11 @@ def Edit_emp(window):
     Fill_table_emp(window)
 
 def Fill_lineedit_emp(window, red):
+    window.Station.clear()
+    cursor.execute("SELECT `idstation`, `name` FROM station")
+    station_in_db = cursor.fetchall()
+    station_ids = [str(station[0]) + " " + str(station[1]) for station in station_in_db]
+    window.Station.addItems(station_ids)
     if red == 0:
         window.Surname.setText("")
         window.Firstname.setText("")
@@ -129,7 +136,7 @@ def Fill_lineedit_emp(window, red):
         window.Patronymic.setText(f"{window.Table_emp.item(currect, 3).text()}")
         window.Adress.setText(f"{window.Table_emp.item(currect, 4).text()}")
         window.Number.setText(f"{window.Table_emp.item(currect, 5).text()}")
-        window.Station.setText(f"{window.Table_emp.item(currect, 8).text()}")
+        window.Station.setCurrentIndex(0)
         window.Admin.setText(f"{window.Table_emp.item(currect, 6).text()}")
         window.Login_line_emp.setText(f"{window.Table_emp.item(currect, 7).text()}")
         window.Password_line_emp.setText(f"")
@@ -143,19 +150,23 @@ def Fill_lineedit_emp(window, red):
 def Remove_emp(window):
     currect = window.Table_emp.currentRow()
     login = window.Table_emp.item(currect, 7).text()
-    cursor.execute("DELETE FROM users WHERE login = %s", (login,))
-    cursor.execute(f"DROP USER '{login}'@'%';")
+    try:
+        cursor.execute("DELETE FROM users WHERE login = %s", (login,))
+        cursor.execute(f"DROP USER '{login}'@'%';")
+    except pymysql.MySQLError as err:
+        error = ErrorDialog(str(err))
+        error.show()
     Fill_table_emp(window)
 
 def Fill_table_emp(window):
-    cursor.execute("SELECT * FROM users")
+    cursor.execute("SELECT `idUsers`,`Surname`,`Firstname`,`Patronymic`,`Adress`,`Num`,`Admin`,`Login`, `Station` FROM users")
     rows = cursor.fetchall()
     if (len(rows) == 0):
         change_page(window, 3)
         return 0
     window.Table_emp.setColumnCount(len(rows[0]))
     window.Table_emp.setRowCount(len(rows))
-    window.Table_emp.setHorizontalHeaderLabels(['ID', 'Фамилия', 'Имя', 'Отчество', 'Адрес', 'Номер телефона', 'Админ?', 'Логин'])
+    window.Table_emp.setHorizontalHeaderLabels(['ID', 'Фамилия', 'Имя', 'Отчество', 'Адрес', 'Номер телефона', 'Админ?', 'Логин', 'Станция'])
     for i in range(len(rows)):
         for j in range(len(rows[0])):
             font = QFont()
@@ -275,7 +286,11 @@ def Edit_station(window, currect_row):
 def Remove_station(window):
     currect = window.Table_station.currentRow()
     id = window.Table_station.item(currect, 0).text()
-    cursor.execute("DELETE FROM station WHERE idstation = %s", (id,))
+    try:
+        cursor.execute("DELETE FROM station WHERE idstation = %s", (id,))
+    except pymysql.MySQLError as err:
+        error = ErrorDialog(str(err))
+        error.show()
     Fill_table_station(window)
 
 
@@ -460,7 +475,11 @@ def Fill_table_measure(window):
 def Remove_measure(window):
     currect = window.Table_izm.currentRow()
     id = window.Table_izm.item(currect, 0).text()
-    cursor.execute("DELETE FROM measure WHERE idmeasure = %s", (id,))
+    try:
+        cursor.execute("DELETE FROM measure WHERE idmeasure = %s", (id,))
+    except pymysql.MySQLError as err:
+        error = ErrorDialog(str(err))
+        error.show()
     Fill_table_measure(window)
 
 
